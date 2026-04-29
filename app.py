@@ -53,19 +53,37 @@ if not active_shift:
         supabase.table("shifts").insert({"clock_in": now_iso}).execute()
         st.rerun()
 else:
-    # 1. Parse the clock-in time and ensure it's in your local timezone
+    # 1. Parse the current clock-in time
     in_time = datetime.datetime.fromisoformat(active_shift['clock_in']).astimezone(local_tz)
+    today_str = in_time.strftime('%Y-%m-%d')
+
+    # 2. Calculate how much you've already worked TODAY (excluding current shift)
+    today_shifts = [s for s in shifts if s['clock_in'].startswith(today_str) and s['clock_out'] is not None]
+    already_worked_today = sum(s['total_hours'] for s in today_shifts)
+
+    # 3. Calculate remaining time needed to hit 8 hours
+    hours_left_to_eight = 8.0 - already_worked_today
     
-    # 2. Calculate projected out based on local in_time
-    projected_out = in_time + datetime.timedelta(hours=8)
+    # If you've already worked 8 hours, the projection should just be 'now' 
+    # or show you're in 'overtime' mode.
+    projected_out = in_time + datetime.timedelta(hours=max(0, hours_left_to_eight))
 
+    # 4. Display the info
     st.info(f"Clocked in at: **{in_time.strftime('%I:%M %p')}**")
-    st.success(f"Projected 8-hour mark: **{projected_out.strftime('%I:%M %p')}**")
+    
+    if already_worked_today > 0:
+        st.write(f"Already worked today: **{format_hours(already_worked_today).replace('+', '')}**")
 
-    # 3. Use current local time for live progress
+    if hours_left_to_eight <= 0:
+        st.success(f"✨ You've hit your 8 hours! Everything now is pure bank.")
+    else:
+        st.success(f"Projected 8-hour mark: **{projected_out.strftime('%I:%M %p')}**")
+
+    # 5. Live progress calculation
     now = datetime.datetime.now(local_tz)
-    elapsed = (now - in_time).total_seconds() / 3600
-    st.write(f"Current session: **{format_hours(elapsed).replace('+', '')}**")
+    current_session = (now - in_time).total_seconds() / 3600
+    st.write(f"Current session: **{format_hours(current_session).replace('+', '')}**")
+    st.write(f"Total for today: **{format_hours(already_worked_today + current_session).replace('+', '')}**")
 
     if st.button("Clock Out", type="secondary", use_container_width=True):
         out_time = datetime.datetime.now(local_tz)
