@@ -46,25 +46,32 @@ st.divider()
 # 4. Clock In/Out Logic
 if not active_shift:
     if st.button("Clock In", type="primary", use_container_width=True):
-        # Use timezone-aware UTC for consistency
-        now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        # Get current time in Mountain Time
+        now_local = datetime.datetime.now(local_tz)
+        now_iso = now_local.isoformat()
+        
         supabase.table("shifts").insert({"clock_in": now_iso}).execute()
         st.rerun()
 else:
-    # Parse the clock-in time
-    in_time = datetime.datetime.fromisoformat(active_shift['clock_in'])
+    # 1. Parse the clock-in time and ensure it's in your local timezone
+    in_time = datetime.datetime.fromisoformat(active_shift['clock_in']).astimezone(local_tz)
+    
+    # 2. Calculate projected out based on local in_time
     projected_out = in_time + datetime.timedelta(hours=8)
 
-    st.info(f"Clocked in at: **{in_time.astimezone().strftime('%I:%M %p')}**")
-    st.success(f"Projected 8-hour mark: **{projected_out.astimezone().strftime('%I:%M %p')}**")
+    st.info(f"Clocked in at: **{in_time.strftime('%I:%M %p')}**")
+    st.success(f"Projected 8-hour mark: **{projected_out.strftime('%I:%M %p')}**")
 
-    # Live progress calculation
-    now = datetime.datetime.now(datetime.timezone.utc)
+    # 3. Use current local time for live progress
+    now = datetime.datetime.now(local_tz)
     elapsed = (now - in_time).total_seconds() / 3600
     st.write(f"Current session: **{format_hours(elapsed).replace('+', '')}**")
 
     if st.button("Clock Out", type="secondary", use_container_width=True):
-        out_time = datetime.datetime.now(datetime.timezone.utc)
+        # Use local time for clock out
+        out_time = datetime.datetime.now(local_tz)
+        
+        # Duration math (both are now local, so the math is clean)
         duration = (out_time - in_time).total_seconds() / 3600
         delta = duration - 8.0
 
