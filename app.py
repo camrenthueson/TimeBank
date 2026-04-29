@@ -159,28 +159,48 @@ with st.expander("➕ Add Manual Adjustment"):
                 st.rerun()
 
 # 6. History Table (Grouped by Day)
-if shifts:
+# We check both shifts and adjustments to see if we should display the table
+if shifts or adj_response.data:
     st.write("### Daily Summary")
     
-    # We'll use a dictionary to group shifts by date
+    # Dictionary to group everything by date
     daily_logs = {}
 
+    # 1. Process Shifts
     for s in shifts:
         if s['clock_out']:
-            # 1. Get the date string (e.g., "2026-04-29")
             date_str = datetime.datetime.fromisoformat(s['clock_in']).strftime('%b %d, %Y')
             
-            # 2. If this date isn't in our dictionary yet, initialize it
             if date_str not in daily_logs:
                 daily_logs[date_str] = {'duration': 0.0, 'delta': 0.0}
             
-            # 3. Add this shift's data to that day's totals
             daily_logs[date_str]['duration'] += s['total_hours']
             daily_logs[date_str]['delta'] += s['delta']
 
-    # 4. Convert the dictionary into a list for the table
+    # 2. Process Adjustments (Adding them to the same dates)
+    for a in adj_response.data:
+        # We look for a 'created_at' date to group by. 
+        # If your table uses a different column name, update 'created_at' here.
+        if 'created_at' in a and a['created_at']:
+            date_str = datetime.datetime.fromisoformat(a['created_at']).strftime('%b %d, %Y')
+            
+            if date_str not in daily_logs:
+                daily_logs[date_str] = {'duration': 0.0, 'delta': 0.0}
+            
+            # Adjustments impact the bank (delta), but they aren't "Duration" (hours worked)
+            daily_logs[date_str]['delta'] += a['amount']
+
+    # 3. Convert the dictionary into a list for the table
+    # We sort by date (converting back to datetime objects for sorting)
+    sorted_dates = sorted(
+        daily_logs.keys(), 
+        key=lambda x: datetime.datetime.strptime(x, '%b %d, %Y'), 
+        reverse=True
+    )
+
     history_data = []
-    for date, totals in daily_logs.items():
+    for date in sorted_dates:
+        totals = daily_logs[date]
         history_data.append({
             "Date": date,
             "Total Duration": format_hours(totals['duration']).replace('+', ''),
