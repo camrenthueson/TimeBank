@@ -1,6 +1,9 @@
 import streamlit as st
 from supabase import create_client
 import datetime
+import pytz
+
+local_tz = pytz.timezone("America/Denver")
 
 # Setup
 url = st.secrets["SUPABASE_URL"]
