@@ -35,15 +35,16 @@ bank_total = sum(s['delta'] for s in shifts if s['delta'] is not None)
 final_bank = bank_total + adj_total
 
 # 3. Display Main Metric
-# We use the clean h/m string for the main value.
-# We use a simple + or - in the delta to trigger the color/arrow.
-delta_indicator = "+" if final_bank >= 0 else "-"
+# Set the hex color: Green for positive/zero, Red for negative
+bank_color = "#28a745" if final_bank >= 0 else "#dc3545"
 
-st.metric(
-    label="Total Time Bank",
-    value=format_hours(final_bank),
-    delta=f"{delta_indicator} {abs(final_bank):.2f} hrs",
-    delta_color="normal"
+# Display the bank as a large, colored header
+st.markdown(
+    f"<h3 style='text-align: center; color: gray; margin-bottom: 0;'>Total Time Bank</h3>"
+    f"<h1 style='text-align: center; color: {bank_color}; font-size: 55px; margin-top: 0;'>"
+    f"{format_hours(final_bank)}"
+    f"</h1>", 
+    unsafe_allow_html=True
 )
 
 st.divider()
