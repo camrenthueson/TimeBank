@@ -35,17 +35,12 @@ bank_total = sum(s['delta'] for s in shifts if s['delta'] is not None)
 final_bank = bank_total + adj_total
 
 # 3. Display Main Metric
-# Determine the color-coded delta label
-if final_bank >= 0:
-    delta_label = f"{format_hours(final_bank).replace('+', '')} above 0"
-else:
-    delta_label = f"{format_hours(final_bank).replace('-', '')} below 0"
-
+# We use the final_bank number itself to tell Streamlit which color to use
 st.metric(
     label="Total Time Bank",
     value=format_hours(final_bank),
-    delta=delta_label,
-    delta_color="normal" # This ensures positive is green, negative is red
+    delta=f"{abs(final_bank):.2f} hrs",
+    delta_color="normal" 
 )
 
 st.divider()
