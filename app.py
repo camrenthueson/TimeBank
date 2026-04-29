@@ -41,7 +41,6 @@ delta_indicator = "+" if final_bank >= 0 else "-"
 
 st.metric(
     label="Total Time Bank",
-    value=format_hours(final_bank),
     delta=f"{delta_indicator} {abs(final_bank):.2f} hrs",
     delta_color="normal"
 )
