@@ -135,9 +135,15 @@ if shifts:
     history_data = []
     for s in shifts:
         if s['clock_out']:
+            # Parse the timestamp to get a cleaner date format
+            clean_date = datetime.datetime.fromisoformat(s['clock_in']).strftime('%b %d, %Y')
+            
             history_data.append({
-                "Date": s['clock_in'][:10],
-                "Duration": f"{s['total_hours']} hrs",
+                "Date": clean_date,
+                # Convert decimal total_hours to h/m string
+                "Duration": format_hours(s['total_hours']).replace('+', ''), 
                 "Bank Impact": format_hours(s['delta'])
             })
+    
+    # Using st.dataframe for a cleaner look with sortable columns
     st.table(history_data)
