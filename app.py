@@ -18,7 +18,7 @@ def format_hours(decimal_hours):
     return f"{sign}{hours}h {minutes}m"
 
 
-st.title("Time Bank")
+st.markdown("<h1 style='text-align: center;'>Time Bank</h1>", unsafe_allow_html=True)
 
 # 1. Fetch Data (Shifts and Adjustments)
 # Fetch shifts
