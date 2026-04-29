@@ -159,11 +159,9 @@ with st.expander("➕ Add Manual Adjustment"):
                 st.rerun()
 
 # 6. History Table (Grouped by Day)
-# We check both shifts and adjustments to see if we should display the table
 if shifts or adj_response.data:
     st.write("### Daily Summary")
     
-    # Dictionary to group everything by date
     daily_logs = {}
 
     # 1. Process Shifts
@@ -172,26 +170,21 @@ if shifts or adj_response.data:
             date_str = datetime.datetime.fromisoformat(s['clock_in']).strftime('%b %d, %Y')
             
             if date_str not in daily_logs:
-                daily_logs[date_str] = {'duration': 0.0, 'delta': 0.0}
+                daily_logs[date_str] = {'delta': 0.0}
             
-            daily_logs[date_str]['duration'] += s['total_hours']
             daily_logs[date_str]['delta'] += s['delta']
 
-    # 2. Process Adjustments (Adding them to the same dates)
+    # 2. Process Adjustments
     for a in adj_response.data:
-        # We look for a 'created_at' date to group by. 
-        # If your table uses a different column name, update 'created_at' here.
         if 'created_at' in a and a['created_at']:
             date_str = datetime.datetime.fromisoformat(a['created_at']).strftime('%b %d, %Y')
             
             if date_str not in daily_logs:
-                daily_logs[date_str] = {'duration': 0.0, 'delta': 0.0}
+                daily_logs[date_str] = {'delta': 0.0}
             
-            # Adjustments impact the bank (delta), but they aren't "Duration" (hours worked)
             daily_logs[date_str]['delta'] += a['amount']
 
-    # 3. Convert the dictionary into a list for the table
-    # We sort by date (converting back to datetime objects for sorting)
+    # 3. Sort and Format for Display
     sorted_dates = sorted(
         daily_logs.keys(), 
         key=lambda x: datetime.datetime.strptime(x, '%b %d, %Y'), 
@@ -203,9 +196,7 @@ if shifts or adj_response.data:
         totals = daily_logs[date]
         history_data.append({
             "Date": date,
-            "Total Duration": format_hours(totals['duration']).replace('+', ''),
             "Daily Bank Impact": format_hours(totals['delta'])
         })
 
-    # Display as a table
     st.table(history_data)
