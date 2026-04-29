@@ -18,7 +18,7 @@ def format_hours(decimal_hours):
     return f"{sign}{hours}h {minutes}m"
 
 
-st.title("⏱️ Time Bank")
+st.title("Time Bank")
 
 # 1. Fetch Data (Shifts and Adjustments)
 # Fetch shifts
