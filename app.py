@@ -40,7 +40,6 @@ bank_color = "#28a745" if final_bank >= 0 else "#dc3545"
 
 # Display the bank as a large, colored header
 st.markdown(
-    f"<h3 style='text-align: center; color: gray; margin-bottom: 0;'>Total Time Bank</h3>"
     f"<h1 style='text-align: center; color: {bank_color}; font-size: 55px; margin-top: 0;'>"
     f"{format_hours(final_bank)}"
     f"</h1>", 
