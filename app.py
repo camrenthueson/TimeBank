@@ -5,17 +5,19 @@ import pytz
 
 icon_url = "https://github.com/camrenthueson/TimeBank/raw/main/icon%20green.png"
 
-# This block "injects" the icon into the iPhone's brain
-st.markdown(
+# We use an empty placeholder to inject the HTML at the very top of the app body
+st.components.v1.html(
     f"""
     <script>
-        var link = document.querySelector("link[rel*='apple-touch-icon']") || document.createElement('link');
+        window.parent.document.title = "Time Bank";
+        var link = window.parent.document.querySelector("link[rel*='apple-touch-icon']") || window.parent.document.createElement('link');
+        link.type = 'image/x-icon';
         link.rel = 'apple-touch-icon';
         link.href = '{icon_url}';
-        document.getElementsByTagName('head')[0].appendChild(link);
+        window.parent.document.getElementsByTagName('head')[0].appendChild(link);
     </script>
     """,
-    unsafe_allow_html=True
+    height=0,
 )
 
 
