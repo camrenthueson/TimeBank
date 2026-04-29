@@ -46,6 +46,8 @@ st.metric(
     value=format_hours(final_bank),
     delta=delta_label,
     delta_color="normal" # This ensures positive is green, negative is red
+)
+
 st.divider()
 
 # 4. Clock In/Out Logic
