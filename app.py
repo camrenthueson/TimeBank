@@ -26,7 +26,7 @@ response = supabase.table("shifts").select("*").order("created_at", desc=True).e
 shifts = response.data
 
 # Fetch adjustments
-adj_response = supabase.table("adjustments").select("amount").execute()
+adj_response = supabase.table("adjustments").select("*").execute() 
 adj_total = sum(a['amount'] for a in adj_response.data)
 
 # 2. Calculate Totals
