@@ -31,7 +31,8 @@ adj_total = sum(a['amount'] for a in adj_response.data)
 
 # 2. Calculate Totals
 active_shift = next((s for s in shifts if s['clock_out'] is None), None)
-bank_total = sum(s['delta'] for s in shifts if s['delta'] is not None)
+# Use a default of 0.0 for s['delta'] if it's None to prevent crashes
+bank_total = sum(s.get('delta') or 0.0 for s in shifts)
 final_bank = bank_total + adj_total
 
 # 3. Display Main Metric
