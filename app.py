@@ -68,12 +68,27 @@ else:
     st.write(f"Current session: **{format_hours(elapsed).replace('+', '')}**")
 
     if st.button("Clock Out", type="secondary", use_container_width=True):
-        # Use local time for clock out
         out_time = datetime.datetime.now(local_tz)
-        
-        # Duration math (both are now local, so the math is clean)
         duration = (out_time - in_time).total_seconds() / 3600
-        delta = duration - 8.0
+        
+        # 1. Find other shifts from TODAY
+        today_str = out_time.strftime('%Y-%m-%d')
+        
+        # Filter shifts that started today and are already finished
+        today_shifts = [s for s in shifts if s['clock_in'].startswith(today_str) and s['clock_out'] is not None]
+        
+        # 2. Calculate previous hours worked today
+        prev_hours_today = sum(s['total_hours'] for s in today_shifts)
+        total_hours_today = prev_hours_today + duration
+        
+        # 3. Delta Logic: 
+        # If this is the FIRST shift of the day, delta is (Total - 8).
+        # If we already clocked out once today, the -8 was already applied, 
+        # so this shift's delta is just the full duration.
+        if prev_hours_today > 0:
+            delta = duration # The -8 was already "paid" by the first shift
+        else:
+            delta = total_hours_today - 8.0
 
         supabase.table("shifts").update({
             "clock_out": out_time.isoformat(),
