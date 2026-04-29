@@ -123,14 +123,38 @@ else:
 # 5. Manual Adjustment Form
 with st.expander("➕ Add Manual Adjustment"):
     with st.form("adj_form", clear_on_submit=True):
-        adj_amount = st.number_input("Hours (use negative for under)", value=0.0, step=0.25)
-        adj_reason = st.text_input("Reason", placeholder="Forgot to clock in...")
+        # 1. Date Picker
+        adj_date = st.date_input("Date of Adjustment", value=datetime.datetime.now(local_tz).date())
+        
+        # 2. H/M Inputs side-by-side
+        col1, col2 = st.columns(2)
+        with col1:
+            adj_h = st.number_input("Hours", min_value=0, step=1, value=0)
+        with col2:
+            adj_m = st.number_input("Minutes", min_value=0, max_value=59, step=1, value=0)
+        
+        # 3. Type Selection (Gain or Loss)
+        adj_type = st.radio("Adjustment Type", ["Add to Bank (+)", "Subtract from Bank (-)"], horizontal=True)
+        
+        adj_reason = st.text_input("Reason", placeholder="e.g., Training, Forgot to clock in...")
 
         if st.form_submit_button("Apply to Bank"):
-            if adj_amount != 0:
+            # Convert H/M to a single decimal value
+            decimal_value = adj_h + (adj_m / 60)
+            
+            # Make it negative if that's what was selected
+            if "Subtract" in adj_type:
+                decimal_value = -decimal_value
+            
+            if decimal_value != 0:
+                # We save the adjustment with the chosen date
+                # We format the date to match your shift timestamps for the history grouping
+                timestamp = datetime.datetime.combine(adj_date, datetime.time(12, 0)).isoformat()
+                
                 supabase.table("adjustments").insert({
-                    "amount": adj_amount,
-                    "reason": adj_reason
+                    "amount": decimal_value,
+                    "reason": adj_reason,
+                    "created_at": timestamp # This ensures it shows up in history correctly
                 }).execute()
                 st.rerun()
 
