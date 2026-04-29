@@ -129,21 +129,34 @@ with st.expander("➕ Add Manual Adjustment"):
                 }).execute()
                 st.rerun()
 
-# 6. History Table
+# 6. History Table (Grouped by Day)
 if shifts:
-    st.write("### Recent Shifts")
-    history_data = []
+    st.write("### Daily Summary")
+    
+    # We'll use a dictionary to group shifts by date
+    daily_logs = {}
+
     for s in shifts:
         if s['clock_out']:
-            # Parse the timestamp to get a cleaner date format
-            clean_date = datetime.datetime.fromisoformat(s['clock_in']).strftime('%b %d, %Y')
+            # 1. Get the date string (e.g., "2026-04-29")
+            date_str = datetime.datetime.fromisoformat(s['clock_in']).strftime('%b %d, %Y')
             
-            history_data.append({
-                "Date": clean_date,
-                # Convert decimal total_hours to h/m string
-                "Duration": format_hours(s['total_hours']).replace('+', ''), 
-                "Bank Impact": format_hours(s['delta'])
-            })
-    
-    # Using st.dataframe for a cleaner look with sortable columns
+            # 2. If this date isn't in our dictionary yet, initialize it
+            if date_str not in daily_logs:
+                daily_logs[date_str] = {'duration': 0.0, 'delta': 0.0}
+            
+            # 3. Add this shift's data to that day's totals
+            daily_logs[date_str]['duration'] += s['total_hours']
+            daily_logs[date_str]['delta'] += s['delta']
+
+    # 4. Convert the dictionary into a list for the table
+    history_data = []
+    for date, totals in daily_logs.items():
+        history_data.append({
+            "Date": date,
+            "Total Duration": format_hours(totals['duration']).replace('+', ''),
+            "Daily Bank Impact": format_hours(totals['delta'])
+        })
+
+    # Display as a table
     st.table(history_data)
