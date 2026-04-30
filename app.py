@@ -252,27 +252,33 @@ if shifts or adj_response.data:
 
     st.table(history_data)
 
+#-----------UI Settings--------------
+# --- 1. Fetch Saved Color ---
+# We use .limit(1) because we only need the one background row
+theme_query = supabase.table("settings").select("value").eq("id", "bg_color").execute()
+saved_color = theme_query.data[0]['value'] if theme_query.data else "#0e1117"
 
-with st.expander("🎨 UI Settings"):
-    # Allow the user to pick a custom color
-    custom_bg = st.color_picker("Choose Background Color", "#0e1117")
-    
-    # Or offer "Presets"
-    theme_choice = st.radio("Theme Presets", ["Custom", "Deep Sea", "Midnight"], horizontal=True)
+# --- 2. UI for Changing Color ---
+with st.sidebar: # Moving it to the sidebar keeps the main screen clean
+    st.write("### Settings")
+    new_color = st.color_picker("App Background", saved_color)
 
-# Map presets to hex codes
-if theme_choice == "Deep Sea":
-    bg_color = "#001f3f"
-elif theme_choice == "Midnight":
-    bg_color = "#000000"
-else:
-    bg_color = custom_bg # Default to the color picker
+    # If the user picks a new color, save it to Supabase
+    if new_color != saved_color:
+        supabase.table("settings").upsert({"id": "bg_color", "value": new_color}).execute()
+        st.rerun()
 
+# --- 3. Inject the Color ---
 st.markdown(
     f"""
     <style>
     .stApp {{
-        background-color: {bg_color};
+        background-color: {new_color};
+    }}
+    /* Optional: make the sidebar match slightly */
+    [data-testid="stSidebar"] {{
+        background-color: {new_color};
+        filter: brightness(1.2);
     }}
     </style>
     """,
