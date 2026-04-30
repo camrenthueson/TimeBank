@@ -74,12 +74,18 @@ st.divider()
 
 # 4. Clock In/Out Logic
 if not active_shift:
+    # --- NEW SLIDER LOGIC ---
+    st.write("### Ready to start?")
+    minutes_ago = st.slider("Started how many minutes ago?", 0, 120, 0, step=5)
+    
     if st.button("Clock In", type="primary", use_container_width=True):
-        # Get current time in Mountain Time
+        # Calculate the actual start time based on the slider
         now_local = datetime.datetime.now(local_tz)
-        now_iso = now_local.isoformat()
+        actual_start = now_local - datetime.timedelta(minutes=minutes_ago)
         
-        supabase.table("shifts").insert({"clock_in": now_iso}).execute()
+        supabase.table("shifts").insert({
+            "clock_in": actual_start.isoformat()
+        }).execute()
         st.rerun()
 else:
     # 1. Parse the current clock-in time
