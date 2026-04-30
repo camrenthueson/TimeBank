@@ -68,7 +68,8 @@ if not active_shift:
     with st.expander("Adjust start time"):
         in_minutes_ago = st.slider("Minutes ago:", 0, 120, 0, step=5, key="in_slider")
         
-    st.markdown('<div class="in-button">', unsafe_allow_html=True)
+    # WRAPPER FOR IN
+    st.markdown(f'<div class="in-button">', unsafe_allow_html=True)
     if st.button("Clock In", use_container_width=True, key="main_clock_in"):
         now_local = datetime.datetime.now(local_tz)
         actual_start = now_local - datetime.timedelta(minutes=in_minutes_ago)
@@ -77,25 +78,15 @@ if not active_shift:
     st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    in_time = datetime.datetime.fromisoformat(active_shift['clock_in']).astimezone(local_tz)
-    today_str = in_time.strftime('%Y-%m-%d')
-    today_shifts = [s for s in shifts if s['clock_in'].startswith(today_str) and s['clock_out'] is not None]
-    already_worked_today = sum(s['total_hours'] for s in today_shifts)
-    hours_left_to_eight = 8.0 - already_worked_today
-    projected_out = in_time + datetime.timedelta(hours=max(0, hours_left_to_eight))
-
+    # ... (Keep your existing info and projection code here) ...
     st.info(f"Clocked in at: **{in_time.strftime('%I:%M %p')}**")
     
-    if hours_left_to_eight <= 0:
-        st.success(f"✨ You've hit your 8 hours!")
-    else:
-        st.success(f"Projected 8-hour mark: **{projected_out.strftime('%I:%M %p')}**")
-
     st.write("---")
     with st.expander("Adjust End Time"):
         out_minutes_ago = st.slider("Minutes ago:", 0, 120, 0, step=5, key="out_slider")
    
-    st.markdown('<div class="out-button">', unsafe_allow_html=True)
+    # WRAPPER FOR OUT
+    st.markdown(f'<div class="out-button">', unsafe_allow_html=True)
     if st.button("Clock Out", use_container_width=True, key="main_clock_out"):
         out_time = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
         if out_time < in_time:
@@ -113,6 +104,8 @@ else:
         }).eq("id", active_shift['id']).execute()
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
+    
+    # ... (Keep your metrics code here) ...
 
     # Progress Dashboard
     now = datetime.datetime.now(local_tz)
@@ -180,29 +173,37 @@ with st.sidebar:
         ]).execute()
         st.rerun()
 
+# --- 3. Inject CSS with Specific Selectors ---
 st.markdown(
     f"""
     <style>
-    .stApp {{ background-color: {new_bg}; }}
+    /* 1. Background Color */
+    .stApp {{ background-color: {new_bg} !important; }}
     
-    div.in-button button {{
+    /* 2. Clock In Button Style */
+    div.in-button button[kind="secondary"] {{
         background-color: {new_in} !important;
         color: white !important;
         border: 1px solid {new_in} !important;
-        height: 3em !important;
     }}
     
-    div.out-button button {{
+    /* 3. Clock Out Button Style */
+    div.out-button button[kind="secondary"] {{
         background-color: {new_out} !important;
         color: white !important;
         border: 1px solid {new_out} !important;
-        height: 3em !important;
     }}
-    
-    /* Ensure text remains visible against custom colors */
+
+    /* 4. Ensure the text inside the buttons is white */
     div.in-button button p, div.out-button button p {{
+        color: white !important;
         font-weight: bold !important;
-        font-size: 1.2rem !important;
+    }}
+
+    /* 5. Hover Effects */
+    div.in-button button:hover, div.out-button button:hover {{
+        opacity: 0.8 !important;
+        border: 1px solid white !important;
     }}
     </style>
     """,
