@@ -64,13 +64,14 @@ st.divider()
 
 # 4. Clock In/Out Logic
 if not active_shift:
+    # --- SECTION: CLOCK IN ---
     st.write("### Ready to start?")
     with st.expander("Adjust start time"):
         in_minutes_ago = st.slider("Minutes ago:", 0, 120, 0, step=5, key="in_slider")
         
     # WRAPPER FOR IN
-    st.markdown(f'<div class="in-button">', unsafe_allow_html=True)
-    if st.button("Clock In", use_container_width=True, key="main_clock_in"):
+    st.markdown('<div class="in-button">', unsafe_allow_html=True)
+    if st.button("Clock In", use_container_width=True, key="btn_in"):
         now_local = datetime.datetime.now(local_tz)
         actual_start = now_local - datetime.timedelta(minutes=in_minutes_ago)
         supabase.table("shifts").insert({"clock_in": actual_start.isoformat()}).execute()
@@ -78,16 +79,29 @@ if not active_shift:
     st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    # ... (Keep your existing info and projection code here) ...
+    # --- THIS LINE WAS MISSING (The fix for the NameError) ---
+    in_time = datetime.datetime.fromisoformat(active_shift['clock_in']).astimezone(local_tz)
+    
+    today_str = in_time.strftime('%Y-%m-%d')
+    today_shifts = [s for s in shifts if s['clock_in'].startswith(today_str) and s['clock_out'] is not None]
+    already_worked_today = sum(s['total_hours'] for s in today_shifts)
+    hours_left_to_eight = 8.0 - already_worked_today
+    projected_out = in_time + datetime.timedelta(hours=max(0, hours_left_to_eight))
+
     st.info(f"Clocked in at: **{in_time.strftime('%I:%M %p')}**")
     
+    if hours_left_to_eight <= 0:
+        st.success(f"✨ You've hit your 8 hours!")
+    else:
+        st.success(f"Projected 8-hour mark: **{projected_out.strftime('%I:%M %p')}**")
+
     st.write("---")
     with st.expander("Adjust End Time"):
         out_minutes_ago = st.slider("Minutes ago:", 0, 120, 0, step=5, key="out_slider")
    
     # WRAPPER FOR OUT
-    st.markdown(f'<div class="out-button">', unsafe_allow_html=True)
-    if st.button("Clock Out", use_container_width=True, key="main_clock_out"):
+    st.markdown('<div class="out-button">', unsafe_allow_html=True)
+    if st.button("Clock Out", use_container_width=True, key="btn_out"):
         out_time = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
         if out_time < in_time:
             out_time = in_time 
@@ -104,13 +118,10 @@ else:
         }).eq("id", active_shift['id']).execute()
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
-    
-    # ... (Keep your metrics code here) ...
 
     # Progress Dashboard
     now = datetime.datetime.now(local_tz)
     current_session = (now - in_time).total_seconds() / 3600
-    
     st.write("---")
     col1, col2 = st.columns(2)
     col1.metric("Current Session", format_hours(current_session).replace('+', ''))
