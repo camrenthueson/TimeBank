@@ -124,8 +124,8 @@ else:
    
     # Temporary calculation just for the warning
     temp_out = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
-        if temp_out < in_time:
-        st.warning("⚠️ Careful! You're sliding the finish time to before you started.")
+    if temp_out < in_time:
+    st.warning("⚠️ Careful! You're sliding the finish time to before you started.")
 
     if st.button("Clock Out", type="primary", use_container_width=True):
         # 1. Calculate the adjusted out time
