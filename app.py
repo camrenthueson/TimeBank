@@ -258,7 +258,7 @@ with st.expander("🎨 UI Settings"):
     custom_bg = st.color_picker("Choose Background Color", "#0e1117")
     
     # Or offer "Presets"
-    theme_choice = st.radio("Theme Presets", ["Dark Lab", "Deep Sea", "Midnight"], horizontal=True)
+    theme_choice = st.radio("Theme Presets", ["Custom", "Deep Sea", "Midnight"], horizontal=True)
 
 # Map presets to hex codes
 if theme_choice == "Deep Sea":
