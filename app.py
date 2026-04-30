@@ -145,13 +145,6 @@ else:
     current_session = (now - in_time).total_seconds() / 3600
     st.write(f"Current session: **{format_hours(current_session).replace('+', '')}**")
 
-     # 5. Live progress calculation
-    now = datetime.datetime.now(local_tz)
-    current_session = (now - in_time).total_seconds() / 3600
-    st.write(f"Current session: **{format_hours(current_session).replace('+', '')}**")
-    st.write(f"Total for today: **{format_hours(already_worked_today + current_session).replace('+', '')}**")
-
-
 # 5. Manual Adjustment Form
 with st.expander("➕ Add Manual Adjustment"):
     with st.form("adj_form", clear_on_submit=True):
