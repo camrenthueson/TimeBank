@@ -77,12 +77,13 @@ if not active_shift:
     # --- SECTION: CLOCK IN ---
     st.write("### Ready to start?")
     # Slider to backdate start time
-    in_minutes_ago = st.slider(
-    "Adjust Start Time", 
-    0, 120, 0, step=5, 
-    key="in_slider",
-    help="Use this if you started working a while ago but forgot to hit the button."
-    )
+    with st.expander("Adjust start time"):
+        in_minutes_ago = st.slider(
+        "Minutes ago:", 
+        0, 120, 0, step=5, 
+        key="in_slider",
+        help="Use this if you started working a while ago but forgot to hit the button."
+        )
         
     if st.button("Clock In", type="primary", use_container_width=True):
         now_local = datetime.datetime.now(local_tz)
