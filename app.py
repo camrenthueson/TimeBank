@@ -261,18 +261,24 @@ st.markdown(
     <style>
     .stApp {{ background-color: {new_bg}; }}
     
-    /* Style for the Clock In container */
-    div.in-button > div > button {{
+    /* Force style for the Clock In button */
+    div.in-button button {{
         background-color: {new_in} !important;
         color: white !important;
-        border: none !important;
+        border: 1px solid {new_in} !important;
+    }}
+    div.in-button button:hover {{
+        border: 1px solid white !important;
     }}
     
-    /* Style for the Clock Out container */
-    div.out-button > div > button {{
+    /* Force style for the Clock Out button */
+    div.out-button button {{
         background-color: {new_out} !important;
         color: white !important;
-        border: none !important;
+        border: 1px solid {new_out} !important;
+    }}
+    div.out-button button:hover {{
+        border: 1px solid white !important;
     }}
     </style>
     """,
