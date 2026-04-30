@@ -96,7 +96,6 @@ else:
     current_session = (now - in_time).total_seconds() / 3600
     st.write("---")
     col1, col2 = st.columns(2)
-    col1.metric("Current Session", format_hours(current_session).replace('+', ''))
     col2.metric("Total Today", format_hours(already_worked_today + current_session).replace('+', ''))
 
 # 6. Manual Adjustment Form
