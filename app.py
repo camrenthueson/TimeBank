@@ -2,6 +2,11 @@ import streamlit as st
 from supabase import create_client
 import datetime
 import pytz
+from streamlit_autorefresh import st_autorefresh
+
+# Refresh every 60 seconds (60,000 milliseconds)
+# 'key' can be anything; it just tracks the counter
+count = st_autorefresh(interval=60000, key="fivedatarefresh")
 
 icon_url = "https://github.com/camrenthueson/TimeBank/raw/main/icon%20green.png"
 
