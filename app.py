@@ -281,20 +281,3 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- 4. Wrap your buttons in the UI ---
-if not active_shift:
-    with st.container():
-        st.markdown('<div class="in-button">', unsafe_allow_html=True)
-        # Added key="main_clock_in"
-        if st.button("Clock In", type="primary", use_container_width=True, key="main_clock_in"):
-            # ... your logic ...
-            pass
-        st.markdown('</div>', unsafe_allow_html=True)
-else:
-    with st.container():
-        st.markdown('<div class="out-button">', unsafe_allow_html=True)
-        # Added key="main_clock_out"
-        if st.button("Clock Out", type="primary", use_container_width=True, key="main_clock_out"):
-            # ... your logic ...
-            pass
-        st.markdown('</div>', unsafe_allow_html=True)
