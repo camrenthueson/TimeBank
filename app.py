@@ -76,16 +76,12 @@ st.divider()
 if not active_shift:
     # --- SECTION: CLOCK IN ---
     st.write("### Ready to start?")
-    # Slider to backdate start time
     with st.expander("Adjust start time"):
-        in_minutes_ago = st.slider(
-        "Minutes ago:", 
-        0, 120, 0, step=5, 
-        key="in_slider",
-        help="Use this if you started working a while ago but forgot to hit the button."
-        )
+        in_minutes_ago = st.slider("Minutes ago:", 0, 120, 0, step=5, key="in_slider")
         
-    if st.button("Clock In", type="primary", use_container_width=True):
+    # --- WRAPPER START ---
+    st.markdown('<div class="in-button">', unsafe_allow_html=True)
+    if st.button("Clock In", type="primary", use_container_width=True, key="main_clock_in"):
         now_local = datetime.datetime.now(local_tz)
         actual_start = now_local - datetime.timedelta(minutes=in_minutes_ago)
         
@@ -93,69 +89,48 @@ if not active_shift:
             "clock_in": actual_start.isoformat()
         }).execute()
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+    # --- WRAPPER END ---
 
 else:
-    # --- SECTION: CALCULATIONS ---
-    # 1. Parse the current clock-in time
+    # --- SECTION: CALCULATIONS (Keep your existing calc code here) ---
     in_time = datetime.datetime.fromisoformat(active_shift['clock_in']).astimezone(local_tz)
     today_str = in_time.strftime('%Y-%m-%d')
-
-    # 2. Calculate how much you've already worked TODAY (excluding current shift)
     today_shifts = [s for s in shifts if s['clock_in'].startswith(today_str) and s['clock_out'] is not None]
     already_worked_today = sum(s['total_hours'] for s in today_shifts)
-
-    # 3. Calculate remaining time needed to hit 8 hours
     hours_left_to_eight = 8.0 - already_worked_today
     projected_out = in_time + datetime.timedelta(hours=max(0, hours_left_to_eight))
 
-    # --- SECTION: DISPLAY INFO ---
     st.info(f"Clocked in at: **{in_time.strftime('%I:%M %p')}**")
-    
     if already_worked_today > 0:
         st.write(f"Already worked today: **{format_hours(already_worked_today).replace('+', '')}**")
-
+    
     if hours_left_to_eight <= 0:
-        st.success(f"✨ You've hit your 8 hours! Everything now is pure bank.")
+        st.success(f"✨ You've hit your 8 hours!")
     else:
         st.success(f"Projected 8-hour mark: **{projected_out.strftime('%I:%M %p')}**")
 
-# --- SECTION: CLOCK OUT WITH SLIDER (FIXED) ---
     st.write("---")
     with st.expander("Adjust End Time"):
-        out_minutes_ago = st.slider(
-            "Minutes ago:",
-            0, 120, 0, step=5, 
-            key="out_slider",
-            help="If you forgot to clock out, use this slider to backdate your finish time (up to 2 hours)."
-        )
+        out_minutes_ago = st.slider("Minutes ago:", 0, 120, 0, step=5, key="out_slider")
    
-    # Temporary calculation just for the warning
     temp_out = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
     if temp_out < in_time:
         st.warning("⚠️ Careful! You're sliding the finish time to before you started.")
 
-    if st.button("Clock Out", type="primary", use_container_width=True):
-        # 1. Calculate the adjusted out time
+    # --- WRAPPER START ---
+    st.markdown('<div class="out-button">', unsafe_allow_html=True)
+    if st.button("Clock Out", type="primary", use_container_width=True, key="main_clock_out"):
         out_time = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
-        
-        # 2. THE SAFETY CHECK: Ensure out_time isn't before in_time
         if out_time < in_time:
-            out_time = in_time # Force them to be the same (0 minute shift)
+            out_time = in_time 
             
         duration = (out_time - in_time).total_seconds() / 3600
-        
-        # 3. Calculate previous hours worked today
-        today_shifts = [s for s in shifts if s['clock_in'].startswith(today_str) and s['clock_out'] is not None]
         prev_hours_today = sum(s['total_hours'] for s in today_shifts)
         total_hours_today = prev_hours_today + duration
         
-        # 4. Delta Logic
-        if prev_hours_today > 0:
-            delta = duration 
-        else:
-            delta = total_hours_today - 8.0
+        delta = duration if prev_hours_today > 0 else (total_hours_today - 8.0)
 
-        # 5. Update Supabase
         supabase.table("shifts").update({
             "clock_out": out_time.isoformat(),
             "total_hours": round(duration, 2),
@@ -163,6 +138,12 @@ else:
         }).eq("id", active_shift['id']).execute()
         
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+    # --- WRAPPER END ---
+
+    now = datetime.datetime.now(local_tz)
+    current_session = (now - in_time).total_seconds() / 3600
+    st.write(f"Current session: **{format_hours(current_session).replace('+', '')}**")
 
      # 5. Live progress calculation
     now = datetime.datetime.now(local_tz)
