@@ -117,25 +117,34 @@ else:
     st.write("---")
     st.write("### Finishing up?")
     out_minutes_ago = st.slider("Actually finished how many minutes ago?", 0, 120, 0, step=5, key="out_slider")
+    # Temporary calculation just for the warning
+    temp_out = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
+    
+    if temp_out < in_time:
+        st.warning("⚠️ Careful! You're sliding the finish time to before you started.")
 
     if st.button("Clock Out", type="primary", use_container_width=True):
+        # 1. Calculate the adjusted out time
         out_time = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
+        
+        # 2. THE SAFETY CHECK: Ensure out_time isn't before in_time
+        if out_time < in_time:
+            out_time = in_time # Force them to be the same (0 minute shift)
+            
         duration = (out_time - in_time).total_seconds() / 3600
         
-        # 1. Filter shifts that started today and are already finished
+        # 3. Calculate previous hours worked today
         today_shifts = [s for s in shifts if s['clock_in'].startswith(today_str) and s['clock_out'] is not None]
-        
-        # 2. Calculate previous hours worked today
         prev_hours_today = sum(s['total_hours'] for s in today_shifts)
         total_hours_today = prev_hours_today + duration
         
-        # 3. Delta Logic: 
+        # 4. Delta Logic
         if prev_hours_today > 0:
             delta = duration 
         else:
             delta = total_hours_today - 8.0
 
-        # 4. Update Supabase with ALL the math, not just the time
+        # 5. Update Supabase
         supabase.table("shifts").update({
             "clock_out": out_time.isoformat(),
             "total_hours": round(duration, 2),
