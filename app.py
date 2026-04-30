@@ -115,12 +115,16 @@ else:
 
 # --- SECTION: CLOCK OUT WITH SLIDER (FIXED) ---
     st.write("---")
-    st.write("### Finishing up?")
-    out_minutes_ago = st.slider("Actually finished how many minutes ago?", 0, 120, 0, step=5, key="out_slider")
+    out_minutes_ago = st.slider(
+        "Adjust End Time", 
+        0, 120, 0, step=5, 
+        key="out_slider",
+        help="If you forgot to clock out, use this slider to backdate your finish time (up to 2 hours)."
+    )
+   
     # Temporary calculation just for the warning
     temp_out = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
-    
-    if temp_out < in_time:
+        if temp_out < in_time:
         st.warning("⚠️ Careful! You're sliding the finish time to before you started.")
 
     if st.button("Clock Out", type="primary", use_container_width=True):
