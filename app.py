@@ -162,32 +162,12 @@ else:
         
         st.rerun()
 
-     # 5. Live progress calculation (The Dashboard Look)
+     # 5. Live progress calculation
     now = datetime.datetime.now(local_tz)
     current_session = (now - in_time).total_seconds() / 3600
-    total_today = already_worked_today + current_session
+    st.write(f"Current session: **{format_hours(current_session).replace('+', '')}**")
+    st.write(f"Total for today: **{format_hours(already_worked_today + current_session).replace('+', '')}**")
 
-    # Create two clean columns for the metrics
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.metric(
-            label="Current Session", 
-            value=format_hours(current_session).replace('+', '')
-        )
-        
-    with col2:
-        # We can show the 'Today' total and how it relates to your 8h goal
-        delta_to_goal = total_today - 8.0
-        st.metric(
-            label="Total Today", 
-            value=format_hours(total_today).replace('+', ''),
-            delta=f"{delta_to_goal:.2f}h vs Goal" if total_today > 0 else None
-        )
-
-    # Optional: Add the progress bar right under the metrics
-    progress_val = min(total_today / 8.0, 1.0)
-    st.progress(progress_val, text=f"Daily Goal: {int(progress_val * 100)}%")
 
 # 5. Manual Adjustment Form
 with st.expander("➕ Add Manual Adjustment"):
