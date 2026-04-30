@@ -302,17 +302,18 @@ st.markdown(
 
 # --- 4. Wrap your buttons in the UI ---
 if not active_shift:
-    # Use an empty container to apply the custom class
     with st.container():
         st.markdown('<div class="in-button">', unsafe_allow_html=True)
-        if st.button("Clock In", type="primary", use_container_width=True):
-            # ... your clock in logic ...
+        # Added key="main_clock_in"
+        if st.button("Clock In", type="primary", use_container_width=True, key="main_clock_in"):
+            # ... your logic ...
             pass
         st.markdown('</div>', unsafe_allow_html=True)
 else:
     with st.container():
         st.markdown('<div class="out-button">', unsafe_allow_html=True)
-        if st.button("Clock Out", type="primary", use_container_width=True):
-            # ... your clock out logic ...
+        # Added key="main_clock_out"
+        if st.button("Clock Out", type="primary", use_container_width=True, key="main_clock_out"):
+            # ... your logic ...
             pass
         st.markdown('</div>', unsafe_allow_html=True)
