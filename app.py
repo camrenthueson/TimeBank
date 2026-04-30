@@ -74,20 +74,22 @@ st.divider()
 
 # 4. Clock In/Out Logic
 if not active_shift:
-    # --- NEW SLIDER LOGIC ---
+    # --- SECTION: CLOCK IN ---
     st.write("### Ready to start?")
-    minutes_ago = st.slider("Started how many minutes ago?", 0, 120, 0, step=5)
+    # Slider to backdate start time
+    in_minutes_ago = st.slider("Started how many minutes ago?", 0, 120, 0, step=5, key="in_slider")
     
     if st.button("Clock In", type="primary", use_container_width=True):
-        # Calculate the actual start time based on the slider
         now_local = datetime.datetime.now(local_tz)
-        actual_start = now_local - datetime.timedelta(minutes=minutes_ago)
+        actual_start = now_local - datetime.timedelta(minutes=in_minutes_ago)
         
         supabase.table("shifts").insert({
             "clock_in": actual_start.isoformat()
         }).execute()
         st.rerun()
+
 else:
+    # --- SECTION: CALCULATIONS ---
     # 1. Parse the current clock-in time
     in_time = datetime.datetime.fromisoformat(active_shift['clock_in']).astimezone(local_tz)
     today_str = in_time.strftime('%Y-%m-%d')
@@ -98,12 +100,9 @@ else:
 
     # 3. Calculate remaining time needed to hit 8 hours
     hours_left_to_eight = 8.0 - already_worked_today
-    
-    # If you've already worked 8 hours, the projection should just be 'now' 
-    # or show you're in 'overtime' mode.
     projected_out = in_time + datetime.timedelta(hours=max(0, hours_left_to_eight))
 
-    # 4. Display the info
+    # --- SECTION: DISPLAY INFO ---
     st.info(f"Clocked in at: **{in_time.strftime('%I:%M %p')}**")
     
     if already_worked_today > 0:
@@ -113,6 +112,22 @@ else:
         st.success(f"✨ You've hit your 8 hours! Everything now is pure bank.")
     else:
         st.success(f"Projected 8-hour mark: **{projected_out.strftime('%I:%M %p')}**")
+
+    # --- SECTION: CLOCK OUT WITH SLIDER ---
+    st.write("---")
+    st.write("### Finishing up?")
+    # Slider to backdate end time
+    out_minutes_ago = st.slider("Actually finished how many minutes ago?", 0, 120, 0, step=5, key="out_slider")
+
+    if st.button("Clock Out", type="primary", use_container_width=True):
+        now_local = datetime.datetime.now(local_tz)
+        actual_end = now_local - datetime.timedelta(minutes=out_minutes_ago)
+        
+        supabase.table("shifts").update({
+            "clock_out": actual_end.isoformat()
+        }).eq("id", active_shift["id"]).execute()
+        
+        st.rerun()
 
     # 5. Live progress calculation
     now = datetime.datetime.now(local_tz)
