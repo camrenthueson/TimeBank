@@ -251,3 +251,30 @@ if shifts or adj_response.data:
         })
 
     st.table(history_data)
+
+
+with st.expander("🎨 UI Settings"):
+    # Allow the user to pick a custom color
+    custom_bg = st.color_picker("Choose Background Color", "#0e1117")
+    
+    # Or offer "Presets"
+    theme_choice = st.radio("Theme Presets", ["Dark Lab", "Deep Sea", "Midnight"], horizontal=True)
+
+# Map presets to hex codes
+if theme_choice == "Deep Sea":
+    bg_color = "#001f3f"
+elif theme_choice == "Midnight":
+    bg_color = "#000000"
+else:
+    bg_color = custom_bg # Default to the color picker
+
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-color: {bg_color};
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
