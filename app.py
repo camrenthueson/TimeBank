@@ -253,34 +253,66 @@ if shifts or adj_response.data:
     st.table(history_data)
 
 #-----------UI Settings--------------
-# --- 1. Fetch Saved Color ---
-# We use .limit(1) because we only need the one background row
-theme_query = supabase.table("settings").select("value").eq("id", "bg_color").execute()
-saved_color = theme_query.data[0]['value'] if theme_query.data else "#0e1117"
+# --- 1. Fetch Saved Colors ---
+settings_data = supabase.table("settings").select("*").execute().data
+settings_dict = {item['id']: item['value'] for item in settings_data}
 
-# --- 2. UI for Changing Color ---
-with st.sidebar: # Moving it to the sidebar keeps the main screen clean
-    st.write("### Settings")
-    new_color = st.color_picker("App Background", saved_color)
+saved_bg = settings_dict.get('bg_color', '#0e1117')
+saved_in = settings_dict.get('in_btn_color', '#28a745')
+saved_out = settings_dict.get('out_btn_color', '#dc3545')
 
-    # If the user picks a new color, save it to Supabase
-    if new_color != saved_color:
-        supabase.table("settings").upsert({"id": "bg_color", "value": new_color}).execute()
+# --- 2. Sidebar UI ---
+with st.sidebar:
+    st.write("### 🎨 Theme Settings")
+    new_bg = st.color_picker("Background", saved_bg)
+    new_in = st.color_picker("Clock In Button", saved_in)
+    new_out = st.color_picker("Clock Out Button", saved_out)
+
+    if (new_bg != saved_bg or new_in != saved_in or new_out != saved_out):
+        supabase.table("settings").upsert([
+            {"id": "bg_color", "value": new_bg},
+            {"id": "in_btn_color", "value": new_in},
+            {"id": "out_btn_color", "value": new_out}
+        ]).execute()
         st.rerun()
 
-# --- 3. Inject the Color ---
+# --- 3. Inject CSS with Specific Selectors ---
 st.markdown(
     f"""
     <style>
-    .stApp {{
-        background-color: {new_color};
+    .stApp {{ background-color: {new_bg}; }}
+    
+    /* Style for the Clock In container */
+    div.in-button > div > button {{
+        background-color: {new_in} !important;
+        color: white !important;
+        border: none !important;
     }}
-    /* Optional: make the sidebar match slightly */
-    [data-testid="stSidebar"] {{
-        background-color: {new_color};
-        filter: brightness(1.2);
+    
+    /* Style for the Clock Out container */
+    div.out-button > div > button {{
+        background-color: {new_out} !important;
+        color: white !important;
+        border: none !important;
     }}
     </style>
     """,
     unsafe_allow_html=True
 )
+
+# --- 4. Wrap your buttons in the UI ---
+if not active_shift:
+    # Use an empty container to apply the custom class
+    with st.container():
+        st.markdown('<div class="in-button">', unsafe_allow_html=True)
+        if st.button("Clock In", type="primary", use_container_width=True):
+            # ... your clock in logic ...
+            pass
+        st.markdown('</div>', unsafe_allow_html=True)
+else:
+    with st.container():
+        st.markdown('<div class="out-button">', unsafe_allow_html=True)
+        if st.button("Clock Out", type="primary", use_container_width=True):
+            # ... your clock out logic ...
+            pass
+        st.markdown('</div>', unsafe_allow_html=True)
