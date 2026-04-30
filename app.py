@@ -147,7 +147,7 @@ else:
     total_today_decimal = already_worked_today + current_session_decimal
     
     st.write("---") # Visual separator
-    st.write(f"📅 **Total for today**")
+    st.write(f"**Total for today**")
     st.write(f"{format_hours(total_today_decimal).replace('+', '')}")
 
 # 5. Manual Adjustment Form
