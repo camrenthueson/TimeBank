@@ -81,7 +81,7 @@ if not active_shift:
         
     # --- WRAPPER START ---
     st.markdown('<div class="in-button">', unsafe_allow_html=True)
-    if st.button("Clock In", type="primary", use_container_width=True, key="main_clock_in"):
+    if st.button("Clock In", use_container_width=True, key="main_clock_in"):
         now_local = datetime.datetime.now(local_tz)
         actual_start = now_local - datetime.timedelta(minutes=in_minutes_ago)
         
@@ -120,7 +120,7 @@ else:
 
     # --- WRAPPER START ---
     st.markdown('<div class="out-button">', unsafe_allow_html=True)
-    if st.button("Clock Out", type="primary", use_container_width=True, key="main_clock_out"):
+    if st.button("Clock Out", use_container_width=True, key="main_clock_out"):
         out_time = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
         if out_time < in_time:
             out_time = in_time 
