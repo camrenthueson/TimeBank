@@ -121,12 +121,13 @@ else:
 
 # --- SECTION: CLOCK OUT WITH SLIDER (FIXED) ---
     st.write("---")
-    out_minutes_ago = st.slider(
-        "Adjust End Time", 
-        0, 120, 0, step=5, 
-        key="out_slider",
-        help="If you forgot to clock out, use this slider to backdate your finish time (up to 2 hours)."
-    )
+    with st.expander("Adjust End Time"):
+        out_minutes_ago = st.slider(
+            "Minutes ago:",
+            0, 120, 0, step=5, 
+            key="out_slider",
+            help="If you forgot to clock out, use this slider to backdate your finish time (up to 2 hours)."
+        )
    
     # Temporary calculation just for the warning
     temp_out = datetime.datetime.now(local_tz) - datetime.timedelta(minutes=out_minutes_ago)
